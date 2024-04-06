@@ -4,6 +4,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, HttpUrl
 from cachetools import TTLCache
 from datetime import datetime
+
+from api.utils.common import flatten_dict
 from scrapers.Realtor.realtor import RealtorScraper
 
 # Define a Pydantic model for the input URL
@@ -20,7 +22,7 @@ class URLInput(BaseModel):
     }
 
 # Initialize a TTL cache to store scraped data temporarily
-cache = TTLCache(maxsize=100, ttl=1800)
+cache = TTLCache(maxsize=100, ttl=3600)
 
 # Create an APIRouter instance
 realtor_router = APIRouter()
@@ -70,11 +72,11 @@ async def get_properties(url_input: URLInput):
         metadata = result[-1]
 
         print(f"Fetched {len(properties)} Properties")
-
+        flatten_properties = [flatten_dict(d) for d in properties]
         response = metadata
         response['count'] = len(properties)
         response['request_url'] = url_input.url
-        response["properties"] = properties
+        response["properties"] = flatten_properties
 
         cache[url_input.url] = response
         return response

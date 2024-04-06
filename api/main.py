@@ -1,10 +1,17 @@
 import uvicorn
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from routes.realtor import realtor_router
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class UserAgentMiddleware:
     async def __call__(self, request: Request, call_next):
